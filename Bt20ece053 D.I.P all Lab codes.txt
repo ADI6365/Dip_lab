@@ -1,0 +1,564 @@
+% Digital Image Processing: Lab Task - 1 extracting layers
+% Student: BT20ECE053 (Adarsh Sangale)
+% Date: 16 Jan 2023
+
+
+clc
+clear all
+close all
+
+% Task - 1.0
+original_img = imread('map.png');
+figure, imshow(original_img)
+title('Original RGB Image');
+gray_img = rgb2gray(original_img);
+figure, imshow(gray_img)
+title('Gray Scale Image');
+
+% Task - 1.1
+red_comp = original_img(1:end,1:end,1);
+figure,imshow(red_comp)
+title('Red Component');
+green_comp = original_img(1:end,1:end,2);
+figure,imshow(green_comp)
+title('Green Component');
+blue_comp = original_img(1:end,1:end,3);
+figure,imshow(blue_comp)
+title('Blue Component');
+
+% Task - 1.2
+red_color_extracted = original_img;
+red_color_extracted(:,:,2:3) = 0;
+figure,imshow(red_color_extracted)
+title('Red Colour Extracted');
+green_color_extracted = original_img;
+green_color_extracted(:,:,1) = 0;
+green_color_extracted(:,:,3) = 0;
+figure,imshow(green_color_extracted)
+title('Green Colour Extracted');
+blue_color_extracted = original_img;
+blue_color_extracted(:,:,1:2) = 0;
+figure,imshow(blue_color_extracted)
+title('Blue Colour Extracted');
+
+
+
+
+% Digital Image Processing : Lab Task - 2 Histogram
+% Student: BT20ECE053(Adarsh Sangale)
+% Date: 23 Jan 2023
+
+
+clc;
+clear all;
+close all;
+
+% Input Image
+Input_Image = [52	55	61	59	79	61	76	61               62	59	55	104	94	85	59	71               63	65	66	113	144	104	63	72               64	70	70	126	154	109	71	69               67	73	68	106	122	88	68	68               68	79	60	70	77	66	58	75               69	85	64	58	55	61	65	83               70	87	69	68	65	73	78	90];
+ 
+ Input_Image = uint8(Input_Image);
+ % Dimensions of Input Image
+ [row,col,depth] = size(Input_Image);
+
+% Convert Color Image to Gray Scale
+if depth ==3
+    Input_Image = rgb2gray(Input_Image);
+end
+
+Input_Image = double(Input_Image);
+% Histogram of Input Image
+HistIn = zeros(1,256);
+for i = 1:row
+    for j = 1:col
+        for k1 = 0:255
+            if Input_Image(i,j)==k1
+                HistIn(k1+1)= HistIn(k1+1)+1;
+            end
+        end
+    end
+end
+
+% Histogram Equalization
+
+% Normalization of Input Histogram
+HistIn_norm = (1/(row*col))*HistIn;
+
+% Generating CDF of Input Histogram
+HistIn_cdf = zeros(1,256);
+HistIn_cdf(1)= HistIn_norm(1);
+for i=2:256
+    HistIn_cdf(i)=HistIn_cdf(i-1)+HistIn_norm(i);
+end
+
+% De-Normalize CDF
+HistIn_cdf = round(255*HistIn_cdf);
+%Generate Output Image
+Output_Image = zeros(row,col);
+for i=1:row
+    for j=1:col
+        pix = (Input_Image(i,j)+1);
+        Output_Image(i,j)= HistIn_cdf(pix);
+    end
+end
+
+% Histogram of Ouput Image
+HistOut = zeros(1,256);
+for i =1:row
+    for j=1:col
+        for k=0:255
+            if Output_Image(i,j) ==k
+                HistOut(k+1)= HistOut(k+1)+1;
+            end
+        end
+    end
+end
+
+% Plots
+%Input Image
+subplot(2,2,1);
+imshow(uint8(Input_Image));
+title("Input Image");
+
+% Histogram of Input Image
+subplot(2,2,2);
+plot(HistIn);
+title("Input Image's Histogram");
+xlabel("Gray Levels");
+ylabel("Frequency");
+
+
+% Output Image
+subplot(2,2,3);
+imshow(uint8(Output_Image));
+title("Histogram Equalized Image");
+
+% Histogram of Output Image
+subplot(2,2,4);
+plot(HistOut);
+title("Output Image's Histogram");
+xlabel("Gray Levels");
+ylabel("Frequency");
+
+
+
+
+
+% Digital Image Processing : Lab Task - 3 Gray Scale
+% Student: BT20ECE053(Adarsh Snagale)
+% Date: 30 Jan 2023
+
+clc; 
+clear; 
+close all;
+
+% Task - 1.0
+img = imread('map.png');
+img_gray = rgb2gray(img);
+
+% Task - 1.1
+[row, col, layers] = size(img_gray);
+if (layers==3)
+    error('Input Image should be a Greyscale Image in order to perform Bit Plane Slicing');
+else
+    [bit_plane1,bit_plane2,bit_plane3,bit_plane4,bit_plane5,bit_plane6,bit_plane7,bit_plane8] = BitPlaneSlicing(img_gray);
+end
+
+%Bit Plane 1(LSB)
+subplot(3,3,1);
+imshow(bit_plane1);
+title('I0(LSB)');
+
+%Bit Plane 2
+subplot(3,3,2);
+imshow(bit_plane2);
+title('I1');
+
+%Bit Plane 3
+subplot(3,3,3);
+imshow(bit_plane3);
+title('I2');
+
+%Bit Plane 4
+subplot(3,3,4);
+imshow(bit_plane4);
+title('I3');
+
+%Bit Plane 5
+subplot(3,3,5);
+imshow(bit_plane5);
+title('I4');
+
+%Bit Plane 6
+subplot(3,3,6);
+imshow(bit_plane6);
+title('I5');
+
+%Bit Plane 7
+subplot(3,3,7);
+imshow(bit_plane7);
+title('I6');
+
+%Bit Plane 8(MSB)
+subplot(3,3,8);
+imshow(bit_plane8);
+title('I7(MSB)');
+ 
+% Task - 1.2
+bit_plane1 = zeros(row,col);
+recombined_planes = bit_plane1*(2^0) + bit_plane2*(2^1) + bit_plane3*(2^2) + bit_plane4*(2^3) + bit_plane5*(2^4) + bit_plane6*(2^5) + bit_plane7*(2^6) + bit_plane8*(2^7);
+img_reconstructed = uint8(recombined_planes);
+subplot(3,3,9);
+imshow(img_reconstructed);
+title('Reconstructed Image');
+ 
+% Bit Plane Slicer (Function) using bitget command
+function [bit_plane1, bit_plane2, bit_plane3, bit_plane4, bit_plane5, bit_plane6, bit_plane7, bit_plane8] = BitPlaneSlicing(img_gray)
+[row, col] = size(img_gray);
+bit_planes=zeros(row,col,8);
+for k = 1:8
+    for i = 1:row
+        for j = 1:col
+            bit_planes(i,j,k) = bitget(img_gray(i,j),k); % Extracting Kth Bit of Each Pixel(i,j)of img_gray
+                                                         % and storing Extracted Kth bit in bit_planes(k-1) Matrix 
+        end
+    end
+end
+
+bit_plane1 = bit_planes(:,:,1);
+bit_plane2 = bit_planes(:,:,2);
+bit_plane3 = bit_planes(:,:,3);
+bit_plane4 = bit_planes(:,:,4);
+bit_plane5 = bit_planes(:,:,5);
+bit_plane6 = bit_planes(:,:,6);
+bit_plane7 = bit_planes(:,:,7);
+bit_plane8 = bit_planes(:,:,8);
+
+
+
+% Digital Image Processing : Lab Task - 4 Entropy
+% Student: BT20ECE053(Adarsh Sangale)
+% Date: 13 Feb 2023
+
+clc;
+clear;
+close all;
+
+% Task - 1.0
+img = [1 1 1
+       2 0 0
+       3 3 3];
+% Dimensions of Input Image
+[row,col,depth] = size(img);
+
+% Convert Color Image to Gray Scale
+if depth == 3
+    img = rgb2gray(img);
+end
+
+img = double(img);
+
+% Calculating the Frequency of Every Pixel Intensity in the Input Image
+freq = zeros(1,8);
+for i = 1:row
+    for j = 1:col
+        for k = 0:(2^(row)-1)
+            if img(i,j) == k
+                freq(k+1) = freq(k+1) + 1;
+            end
+        end
+    end
+end
+
+% Calculating the Probablity of Each Pixel Value in the Input Image.
+prob = (1/(row*col)) * freq;
+
+% Entropy = summation(-p*log2(p)), for all pixels in 'img' with Probability 'p'
+entropy = 0;
+for m = 1:(2^(row)-1)
+    if(prob(m)~=0)
+        entropy = entropy + (freq(m))*(prob(m))*(log2(prob(m)));
+    end
+end
+entropy = -(entropy);
+% Task - 1.1
+% Calculating Average Pixel Intensity
+sumPixels = 0;
+for S = 1:(row*col)
+    sumPixels = sumPixels + img(S);
+end
+avgPixelIntensity = sumPixels / (row*col);
+
+% Calculating Median Pixel Value
+imgSorted = sort(img(:)); % Sorts the Array img in Ascending Order
+S = size(imgSorted);
+medianIndex = round(S(1)/2);
+medianPixelValue = imgSorted(medianIndex);
+
+% Calculating Mode Pixel Value
+% Intensity Levels ->  0   1  2  3  4  5  6  7
+% Frequency        ->  2   3  1  3  0  0  0  0
+[maxFreqValue, maxFreqIndex] = max(freq);
+modePixelValue = (maxFreqIndex-1);
+
+
+
+
+% Digital Image Processing : Lab Task - 5 Huffman Coding
+% Student: BT20ECE053(Adarsh Sangale)
+% Date: 20 Feb 2023
+
+probabilities = [0.2, 0.15, 0.1, 0.1, 0.2, 0.15, 0.1];
+[codes, codelength, efficiency] = huffman_coding(probabilities);
+disp(['Codes: ', strjoin(codes, ', ')]);
+disp(['Codelength: ', num2str(codelength)]);
+disp(['Efficiency: ', num2str(efficiency)]);
+
+function [codes, codelength, efficiency] = huffman_coding(probabilities)
+    if sum(probabilities) ~= 1 || any(probabilities <= 0)
+        error('Invalid probabilities. Probabilities must be positive and sum up to 1.');
+    end
+
+    
+    treeNode(1) = struct('left', [], 'right', [], 'probability', [], 'symbol', []);
+
+    
+    queue = cell(1, numel(probabilities));
+    for i = 1:numel(probabilities)
+        node = treeNode;
+        node(1).probability = probabilities(i);
+        node(1).symbol = i;
+        queue{i} = node;
+    end
+    
+    
+    while numel(queue) > 1
+        
+        [~, order] = sort(cellfun(@(x) x(1).probability, queue));
+        queue = queue(order);
+
+        
+        newNode = treeNode;
+        newNode(1).left = queue{1};
+        newNode(1).right = queue{2};
+        newNode(1).probability = newNode(1).left(1).probability + newNode(1).right(1).probability;
+
+        
+        queue = [{newNode}, queue(3:end)];
+    end
+
+    
+    root = queue{1};
+    codes = cell(size(probabilities));
+    traverse_tree(root, '');
+    
+    
+    codelength = cellfun(@length, codes) * probabilities';
+    entropy = -sum(probabilities .* log2(probabilities));
+    efficiency = entropy / codelength;
+
+    function traverse_tree(node, code)
+        if isempty(node(1).left) && isempty(node(1).right)
+            codes{node(1).symbol} = code;
+        else
+            if ~isempty(node(1).left)
+                traverse_tree(node(1).left, [code, '0']);
+            end
+            if ~isempty(node(1).right)
+                traverse_tree(node(1).right, [code, '1']);
+            end
+        end
+    end
+end
+
+
+
+
+% Digital Image Processing : Lab Task - 6 Shanon Fanon
+% Student: BT20ECE053(Adarsh Sangale)
+% Date: 20 Feb 2023
+
+prob = [0.4, 0.3, 0.2, 0.1];
+[codes, codelength, efficiency] = shannon_fano_coding(prob);
+
+function [codes, codelength, efficiency] = shannon_fano_coding(probability)
+    p = probability(:);
+    [sorted_p, sorted_idx] = sort(p, 'descend');
+
+
+    total_p = sum(p);
+    subset_p = 0;
+    idx = 1;
+    while subset_p < total_p/2
+        subset_p = subset_p + sorted_p(idx);
+        idx = idx + 1;
+    end
+    subset1_idx = sorted_idx(1:idx-1);
+    subset2_idx = sorted_idx(idx:end);
+
+
+    if length(subset1_idx) > 1
+        [subset1_code, subset1_codelength, subset1_efficiency] = shannon_fano_coding(p(subset1_idx));
+        for i = 1:length(subset1_code)
+            subset1_code{i} = [false, subset1_code{i}];
+        end
+    else
+        subset1_code = {false};
+        subset1_codelength = 1;
+        subset1_efficiency = 1;
+    end
+    if length(subset2_idx) > 1
+        [subset2_code, subset2_codelength, subset2_efficiency] = shannon_fano_coding(p(subset2_idx));
+        for i = 1:length(subset2_code)
+            subset2_code{i} = [true, subset2_code{i}];
+        end
+    else
+        subset2_code = {true};
+        subset2_codelength = 1;
+        subset2_efficiency = 1;
+    end
+
+
+    codebook = cell(length(p), 1);
+    for i = 1:length(subset1_idx)
+        codebook{subset1_idx(i)} = subset1_code{i};
+    end
+    for i = 1:length(subset2_idx)
+        codebook{subset2_idx(i)} = subset2_code{i};
+    end
+
+
+    codes = codebook(sorted_idx);
+
+    codelength = cellfun(@length, codes);
+    avg_codelength = dot(p, codelength);
+    entropy = -dot(p, log2(p));
+    efficiency = entropy / avg_codelength;
+end
+
+
+
+
+% Digital Image Processing: Lab Task - 7 Arithmetic 
+% Student: BT20ECE053 (Adarsh Sangale)
+% Date: 20 feb 2023
+
+text = 'HELLO';
+code = arithmetic_coding(text);
+
+function code = arithmetic_coding(text)
+    alphabet = ['H', 'E', 'L', 'O'];
+    probability = [2/5, 1/5, 1/5, 1/5];
+
+    lower_bound = 0;
+    upper_bound = 1;
+    cumulative_prob = [0, cumsum(probability)];
+
+    for i = 1:length(text)
+        symbol_idx = find(alphabet == text(i));
+        symbol_lower_bound = lower_bound + (upper_bound - lower_bound) * cumulative_prob(symbol_idx);
+        symbol_upper_bound = lower_bound + (upper_bound - lower_bound) * cumulative_prob(symbol_idx+1);
+
+        lower_bound = symbol_lower_bound;
+        upper_bound = symbol_upper_bound;
+    end
+
+    code = (lower_bound + upper_bound) / 2;
+end
+
+
+
+% Digital Image Processing : Lab Task - 8
+% Student: BT20ECE053(Adarsh Sangale)
+% Date: 06 Mar 2023
+
+clc;
+clear all;
+close all;
+I = imread('trees.tif');
+I = im2gray(I);
+[R, C, D] = size(I);
+subplot(2,3,1)
+imagesc(I)
+colormap gray
+title('Original Image')
+
+[LoD,HiD, LoR, HiR] = wfilters('haar');
+[LL,LH,HL,HH] = dwt2(I,LoD,HiD,'mode','symh');
+DWt_1 = [LL, LH; HL,HH];
+
+subplot(2,3,2)
+imagesc(DWt_1)
+colormap gray
+title('DWT')
+
+Irec = idwt2(LL,LH,HL,HH,LoR,HiR);
+subplot(2,3,3)
+imagesc(Irec)
+colormap gray
+title('Reconstructed Image')
+
+
+
+
+
+% Digital Image Processing : Lab Task - 9 Compresing Image 
+% Student: BT20ECE053 (Adarsh Sangale)
+% Date: 20 Mar 2023
+
+
+clc;
+clear ;
+close all;
+
+Q = [16 11 10 16 24 40 51 61 ;     12 12 14 19 26 28 60 55 ;     14 13 16 24 40 57 69 56 ;     14 17 22 29 51 87 80 62 ;     18 22 37 56 68 109 103 77 ;     24 35 55 64 81 104 113 92 ;     49 64 78 87 103 121 120 101;     72 92 95 98 112 100 103 99];
+originalImage = imread('lena.bmp');
+ImageSize = 8*numel(originalImage);
+Y_d = rgb2ycbcr( originalImage );
+% Downsample:
+Y_d(:,:,2) = 2*round(Y_d(:,:,2)/2);
+Y_d(:,:,3) = 2*round(Y_d(:,:,3)/2);
+% DCT compress:
+A = zeros(size(Y_d));
+B = A;
+for channel = 1:3
+    for j = 1:8:size(Y_d,1)-7
+        for k = 1:8:size(Y_d,2)-7
+            II = Y_d(j:j+7,k:k+7,channel);
+            freq = dct2(II);
+            freq = Q.*round(freq./Q);
+            A(j:j+7,k:k+7,channel) = freq;
+            % inverse at the same time:
+            B(j:j+7,k:k+7,channel) = idct2(freq);
+        end
+    end
+end
+b = A(:);
+b = b(:);
+b(b==0)=[];  
+b = floor(255*(b-min(b))/(max(b)-min(b)));
+symbols = unique(b);
+prob = histcounts(b,length(symbols))/length(b);
+dict = huffmandict(symbols, prob);
+enco = huffmanenco(b, dict);
+FinalCompressedImage = length(enco);
+disp('Compression Ratio is :');
+CR = ImageSize/FinalCompressedImage;
+fprintf(' %d bytes\n', CR);
+
+subplot(1,2,1)
+imshow(originalImage)
+title('Original Image')
+subplot(1,2,2)
+imshow(ycbcr2rgb(uint8(B)));
+title('Compressed Image')
+
+
+
+
+
+
+
+
+
+
+
